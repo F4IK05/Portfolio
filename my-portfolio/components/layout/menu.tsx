@@ -3,6 +3,8 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useRef, useState, useCallback } from "react";
+import { AnimatedThemeToggler } from "../ui/animated-theme-toggler";
+import { usePathname } from "next/navigation";
 
 const menuLinks = [
     { name: "Home", href: "/" },
@@ -14,24 +16,35 @@ const menuLinks = [
 const menuSocials = [
     { name: "GitHub", href: "" },
     { name: "LinkedIn", href: "" },
-    { name: "Twitter", href: "" },
 ]
 
 const underlineStyles = `
     relative 
     after:content-[''] after:absolute after:top-[102.5%] after:left-0 
-    after:w-full after:h-[2px] after:bg-white 
+    after:w-full after:h-[2px] 
+    after:bg-black dark:after:bg-white
     after:scale-x-0 after:origin-right 
     after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.6,0,0.4,1)]
     hover:after:scale-x-100 hover:after:origin-left
 `;
 
+const dotStyles = `
+  inline-block
+  w-0 h-0 bg-black dark:bg-white rounded-full
+  transition-all duration-500 ease-out
+  mr-0
+`;
+
 export default function Navbar() {
+    const pathname = usePathname();
     const openMenuRef = useRef<HTMLDivElement>(null);
     const menuContentRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const [isSelected, setIsSelected] = useState(false);
+
     const isAnimatingRef = useRef(false);
 
     // Получаем ref на main-контейнер (контент страницы)
@@ -130,7 +143,7 @@ export default function Navbar() {
             duration: 0.5,
             ease: "power2.inOut"
         });
-        
+
         gsap.to(".line-bot", {
             y: 0,
             rotation: 0,
@@ -138,7 +151,7 @@ export default function Navbar() {
             duration: 0.5,
             ease: "power2.inOut"
         });
-        
+
         // Контейнер возвращается
         if (containerRef.current) {
             gsap.to(containerRef.current, {
@@ -173,7 +186,7 @@ export default function Navbar() {
             },
         });
 
-        
+
     }, [isMenuOpen]);
 
     const toggleMenu = () => {
@@ -181,10 +194,9 @@ export default function Navbar() {
         else closeMenu();
     };
 
-
     return (
         <>
-            <nav className="sticky top-0 bg-black w-screen p-4 flex justify-between items-center z-2 text-white">
+            <nav className="sticky top-0 bg-white dark:bg-black text-black dark:text-white w-screen p-4 flex justify-between items-center z-2">
                 <div>
                     <a href="#">
                         {/* <svg xmlns="http://www.w3.org/2000/svg" width="30px" height="30px" viewBox="400 393 230 240">
@@ -210,21 +222,37 @@ export default function Navbar() {
                 </div>
             </nav>
 
-            <div className="menu-overlay fixed w-screen h-svh bg-black z-1 text-white [clip-path:polygon(0%_0%,100%_0%,100%_0%,0%_0%)]">
+            <div className="menu-overlay fixed w-screen h-svh bg-white dark:bg-black z-1 text-black dark:text-white [clip-path:polygon(0%_0%,100%_0%,100%_0%,0%_0%)]">
                 <div ref={menuContentRef} className="relative w-full h-full flex content-center items-center origin-left-bottom will-change-[transform,opacity]" style={{ transform: 'translateX(-100px) translateY(-100px) scale(1.5) rotate(-15deg)' }}>
                     <div className="w-full p-[2.5em] flex gap-[2.5em]">
                         <div className="flex-2 flex flex-col py-[2.5em] gap-[2.5em]">
                             <div className="flex flex-col gap-[0.5em] items-start">
-                                {menuLinks.map((link) => (
-                                    <a
-                                        key={link.name}
-                                        href={link.href}
-                                        className={`menu-link-item inline-block will-change-transform transition-colors duration-500 text-[3.5rem] tracking-[-0.02em] ${underlineStyles}`}
-                                        style={{ transform: 'translateY(120%)', opacity: 0.25 }}
-                                    >
-                                        {link.name}
-                                    </a>
-                                ))}
+                                {menuLinks.map((link) => {
+                                    const isActive = pathname === link.href;
+
+                                    return (
+                                        <a
+                                            key={link.name}
+                                            href={link.href}
+                                            className="menu-link-item inline-flex items-center will-change-transform transition-colors duration-500 text-[3.5rem] tracking-[-0.02em] group"
+                                            style={{ transform: 'translateY(120%)', opacity: 0.25 }}
+                                        >
+                                            <span
+                                                className={`
+                                                    ${dotStyles}
+                                                    ${isActive
+                                                        ? "opacity-100 scale-100 w-3 h-3 mr-4"
+                                                        : "opacity-0 scale-0 group-hover:opacity-100 group-hover:scale-100 group-hover:w-3 group-hover:h-3 group-hover:mr-4"
+                                                    }
+                                                `}
+                                            ></span>
+
+                                            <span className={isActive ? "font-medium" : ""}>
+                                                {link.name}
+                                            </span>
+                                        </a>
+                                    );
+                                })}
                             </div>
 
                             <div className="flex flex-col gap-[0.5em] items-start">
@@ -232,7 +260,11 @@ export default function Navbar() {
                                     <a
                                         key={social.name}
                                         href={social.href}
-                                        className={`menu-social-item inline-block will-change-transform transition-colors duration-500 text-[#8f8f8f] hover:text-white ${underlineStyles}`}
+                                        className={`
+                                            menu-social-item inline-block will-change-transform 
+                                            transition-colors duration-500 text-[#8f8f8f] 
+                                            hover:text-black dark:hover:text-white 
+                                            ${underlineStyles}`}
                                         style={{ transform: 'translateY(120%)', opacity: 0.25 }}
                                     >
                                         {social.name}
@@ -240,6 +272,9 @@ export default function Navbar() {
                                 ))}
                             </div>
                         </div>
+                    </div>
+                    <div className="absolute bottom-0 right-0 p-4">
+                        <AnimatedThemeToggler />
                     </div>
                 </div>
             </div>
