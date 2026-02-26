@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --font-alias: "Alias Exp", sans-serif;
+}
+
+/* Скрытие полос прокрутки для всех элементов */
+@layer base {
+  /* Для Chrome, Safari и Edge */
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Для Firefox и IE/Edge */
+  * {
+    -ms-overflow-style: none;  /* IE и Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
