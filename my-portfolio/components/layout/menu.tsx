@@ -137,8 +137,8 @@ export default function Navbar() {
 
                 gsap.to(".menu-overlay", {
                     clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
-                    duration: 0.3,
-                    delay: 0.2,
+                    duration: 0.7,
+                    delay: 0.3,
                     ease: "power4.inOut",
                     onComplete: () => {
                         isAnimatingRef.current = false;
@@ -244,7 +244,7 @@ export default function Navbar() {
 
     return (
         <>
-            <nav className="fixed top-0 left-0 right-0 bg-white dark:bg-black text-black dark:text-white w-screen p-4 flex justify-between items-center z-2">
+            <nav className={`fixed top-0 left-0 right-0 ${pathname=="/contact" ? "transperent" : "bg-white dark:bg-black"} text-black dark:text-white w-screen p-4 flex justify-between items-center z-2`}>
                 <div><a href="#"></a></div>
                 <div
                     className="relative w-12 h-6 cursor-pointer group"
