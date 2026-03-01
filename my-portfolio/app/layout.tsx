@@ -32,14 +32,26 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://db.onlinewebfonts.com/c/28a143377cbff2d089d8727546304d3a?family=Alias+Exp"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const theme = localStorage.getItem('theme');
+                if (theme === 'dark' || (!theme && true)) {
+                  document.documentElement.classList.add('dark');
+                }
+              })();
+            `,
+          }}
+        />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen font-alias`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen font-alias overflow-hidden`}
       >
         <ThemeProvider>
           <Menu />
-          <div className="page-container flex-1 flex flex-col">
-            <main className="flex-1 bg-white dark:bg-black">{children}</main>
+          <div className="page-container flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 bg-background">{children}</main>
             <Footer />
           </div>
         </ThemeProvider>

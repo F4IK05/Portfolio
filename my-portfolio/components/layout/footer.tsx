@@ -2,6 +2,7 @@
 
 import { useRef, useCallback } from "react";
 import gsap from "gsap";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
     const footerRef = useRef<HTMLElement>(null);
@@ -9,6 +10,8 @@ export default function Footer() {
     const inRef = useRef<HTMLDivElement>(null);
     const touchRef = useRef<HTMLDivElement>(null);
     const emailRef = useRef<HTMLAnchorElement>(null);
+
+    const pathname = usePathname();
 
     const handleMouseEnter = useCallback(() => {
         if (emailRef.current) {
@@ -71,6 +74,10 @@ export default function Footer() {
         }
     }, []);
 
+    if (pathname === "/contact") {
+        return null;
+    }
+
     return (
         <footer
             ref={footerRef}
@@ -123,9 +130,9 @@ export default function Footer() {
                         </g>
                     </svg>
                 </div>
-                <a href="mailto:faik.hasanov05@gmail.com" className="sm:hidden flex flex-col pl-6 border py-20 mr-10 w-full">
+                <a href="mailto:faik.hasanov05@gmail.com" className="sm:hidden bg-white flex flex-col pl-6 border py-10 mr-10 w-full">
                     <p
-                        className=" md:text-2xl hover:text-zinc-400 transition-colors"
+                        className=" md:text-2xl text-black hover:text-zinc-400 transition-colors"
                     >
                         faik.hasanov05@gmail.com
                     </p>

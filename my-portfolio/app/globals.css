@@ -10,6 +10,7 @@
 
 /* Скрытие полос прокрутки для всех элементов */
 @layer base {
+
   /* Для Chrome, Safari и Edge */
   *::-webkit-scrollbar {
     display: none;
@@ -17,10 +18,13 @@
 
   /* Для Firefox и IE/Edge */
   * {
-    -ms-overflow-style: none;  /* IE и Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE и Edge */
+    scrollbar-width: none;
+    /* Firefox */
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -136,7 +140,18 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-::view-transition-old(root), ::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+.page-container {
+  padding-top: 64px;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
