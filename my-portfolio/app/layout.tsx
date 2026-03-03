@@ -4,6 +4,7 @@ import "./globals.css";
 import Menu from "@/components/layout/menu";
 import Footer from "@/components/layout/footer";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Loader } from "@/components/ui/loader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,10 +50,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen font-alias overflow-hidden`}
       >
         <ThemeProvider>
-          <Menu />
-          <div className="page-container flex-1 flex flex-col overflow-hidden">
-            <main className="flex-1 bg-background">{children}</main>
-            <Footer />
+          <Loader />
+          <div className="site-content relative flex flex-col min-h-screen">
+            <Menu />
+            <div className="page-container flex-1 flex flex-col overflow-hidden">
+              <main className="flex-1 bg-background">{children}</main>
+              <Footer />
+            </div>
           </div>
         </ThemeProvider>
       </body>

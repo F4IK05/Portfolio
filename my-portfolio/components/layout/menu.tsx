@@ -2,7 +2,7 @@
 
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, useTransition } from "react";
 import { AnimatedThemeToggler } from "../ui/animated-theme-toggler";
 import { usePathname, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -52,6 +52,9 @@ export default function Navbar() {
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const isAnimatingRef = useRef(false);
+    const [isPending, startTransition] = useTransition();
+    const isNavigatingRef = useRef(false);
+    const logoRef = useRef<HTMLSpanElement>(null);
 
     const activePage = (menuLinks.find(l => l.href === pathname)?.page ?? "home") as Page;
     const [hoveredPage, setHoveredPage] = useState<Page | null>(null);
@@ -62,6 +65,20 @@ export default function Navbar() {
     }, []);
 
     useEffect(() => {
+        if (!logoRef.current) return;
+        const shouldHide = pathname === "/contact" && !isMenuOpen;
+        gsap.to(logoRef.current, {
+            opacity: shouldHide ? 0 : 1,
+            y: shouldHide ? -8 : 0,
+            duration: 0.25,
+            ease: shouldHide ? "power2.in" : "power2.out",
+            overwrite: "auto",
+        });
+    }, [pathname, isMenuOpen]);
+
+    useEffect(() => {
+        if (isNavigatingRef.current) return;
+
         const lines = [lineTopRef.current, lineBotRef.current].filter(Boolean);
 
         gsap.killTweensOf(lines);
@@ -79,7 +96,29 @@ export default function Navbar() {
         setIsMenuOpen(false);
         setHoveredPage(null);
         isAnimatingRef.current = false;
+        isNavigatingRef.current = false;
     }, [pathname]);
+
+    // Когда навигация завершена убираем overlay
+    useEffect(() => {
+        if (isNavigatingRef.current && !isPending) {
+            isNavigatingRef.current = false;
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    gsap.to(".menu-overlay", {
+                        clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+                        duration: 0.7,
+                        ease: "power4.inOut",
+                        onComplete: () => {
+                            isAnimatingRef.current = false;
+                            setIsMenuOpen(false);
+                        },
+                    });
+                });
+            })
+        }
+    }, [isPending]);
 
     // Cleanup при размонтировании
     useEffect(() => {
@@ -133,17 +172,9 @@ export default function Navbar() {
                 }
                 gsap.set(menuContentRef.current, { clearProps: "all" });
 
-                router.push(href);
-
-                gsap.to(".menu-overlay", {
-                    clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
-                    duration: 0.7,
-                    delay: 0.3,
-                    ease: "power4.inOut",
-                    onComplete: () => {
-                        isAnimatingRef.current = false;
-                        setIsMenuOpen(false);
-                    },
+                isNavigatingRef.current = true;
+                startTransition(() => {
+                    router.push(href);
                 });
             },
         });
@@ -244,8 +275,18 @@ export default function Navbar() {
 
     return (
         <>
-            <nav className={`fixed top-0 left-0 right-0 ${pathname=="/contact" ? "transperent" : "bg-white dark:bg-black"} text-black dark:text-white w-screen p-4 flex justify-between items-center z-2`}>
-                <div><a href="#"></a></div>
+            <nav className="fixed top-0 left-0 right-0 bg-transparent text-black dark:text-white w-screen p-4 flex justify-between items-center z-60">
+                <div>
+                    <a href="#">
+                        <span
+                            ref={logoRef}
+                            className="navbar-logo-h text-lg font-medium"
+                            style={{ opacity: pathname === "/contact" ? 0 : 1 }}
+                        >
+                            hf
+                        </span>
+                    </a>
+                </div>
                 <div
                     className="relative w-12 h-6 cursor-pointer group"
                     onClick={toggleMenu}
@@ -261,7 +302,7 @@ export default function Navbar() {
                 </div>
             </nav>
 
-            <div className="menu-overlay fixed inset-0 w-screen h-svh overflow-hidden bg-white dark:bg-black z-1 text-black dark:text-white [clip-path:polygon(0%_0%,100%_0%,100%_0%,0%_0%)]">
+            <div className="menu-overlay fixed inset-0 w-screen h-svh overflow-hidden bg-white dark:bg-black z-50 text-black dark:text-white [clip-path:polygon(0%_0%,100%_0%,100%_0%,0%_0%)]">
                 <div
                     ref={menuContentRef}
                     className="relative w-full h-full flex content-center items-center origin-left-bottom will-change-[transform,opacity]"
