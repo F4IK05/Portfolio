@@ -4,21 +4,6 @@ import { useRef, useCallback } from "react";
 import gsap from "gsap";
 import { cn } from "@/lib/utils";
 
-/* ─────────────────────────────────────────────────────────
-   TextSlideHover — GSAP‑анимация «слайд» текста при ховере.
-
-   Структура каждого символа:
-     <span.cell overflow-hidden, высота = 1 строка>
-       <span.slide-track>          ← сдвигается на -100% / +100%
-         <span.primary>C</span>    ← текущий символ (block)
-         <span.secondary>X</span>  ← замена (block, под primary)
-       </span>
-     </span>
-
-   При ховере .slide-track двигается вверх/вниз → primary уезжает,
-   secondary появляется.
-   ───────────────────────────────────────────────────────── */
-
 type AllowedTag =
   | "span" | "div" | "p"
   | "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
@@ -52,14 +37,12 @@ export function TextSlideHover({
 
   const resolvedHoverText = hoverText ?? text;
 
-  /* Разбиваем по символам и выравниваем длину */
   const primaryChars = text.split("");
   const secondaryChars = resolvedHoverText.split("");
   const maxLen = Math.max(primaryChars.length, secondaryChars.length);
   while (primaryChars.length < maxLen) primaryChars.push("\u00A0");
   while (secondaryChars.length < maxLen) secondaryChars.push("\u00A0");
 
-  /* ── Hover enter: сдвигаем трек, чтобы показать secondary ── */
   const handleMouseEnter = useCallback(() => {
     if (!containerRef.current) return;
     tweenRef.current?.kill();
@@ -77,7 +60,6 @@ export function TextSlideHover({
     tweenRef.current = tl;
   }, [direction, duration, ease, stagger]);
 
-  /* ── Hover leave: возвращаем трек обратно ── */
   const handleMouseLeave = useCallback(() => {
     if (!containerRef.current) return;
     tweenRef.current?.kill();
@@ -114,15 +96,11 @@ export function TextSlideHover({
           <span
             key={i}
             className="inline-block overflow-hidden"
-            /* Высота ячейки = ровно 1 строка; всё лишнее обрезается */
             style={{ height: "1.2em", lineHeight: "1.2" }}
           >
-            {/* Трек — содержит 2 строки, суммарная высота 2.4em */}
             <span
               className="slide-track block will-change-transform"
               style={{
-                /* direction="down": трек стартует сдвинутым вверх на 50%,
-                   чтобы показывать primary (вторую строку) */
                 transform: direction === "down" ? "translateY(-50%)" : undefined,
               }}
             >

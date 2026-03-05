@@ -7,6 +7,15 @@ import { AnimatedThemeToggler } from "../ui/animated-theme-toggler";
 import { usePathname, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
+function initReveal() {
+    gsap.to(".site-nav", {
+        autoAlpha: 1,
+        y: 0,
+        duration: 1.4,
+        ease: "power4.out",
+    });
+}
+
 const AsciiIcon3D = dynamic(() => import("@/components/ui/menu-icon-3d"), {
     ssr: false,
     loading: () => <div style={{ width: 40, height: 40 }} />,
@@ -63,6 +72,13 @@ export default function Navbar() {
     useGSAP(() => {
         containerRef.current = document.querySelector(".page-container") as HTMLDivElement;
     }, []);
+    useGSAP(() => {
+        gsap.set(".site-nav", { autoAlpha: 0, y: -40 });
+
+        const onLoaderDone = () => initReveal();
+        window.addEventListener("loader:done", onLoaderDone, { once: true });
+        return () => window.removeEventListener("loader:done", onLoaderDone);
+    }, []);
 
     useEffect(() => {
         if (!logoRef.current) return;
@@ -99,7 +115,6 @@ export default function Navbar() {
         isNavigatingRef.current = false;
     }, [pathname]);
 
-    // Когда навигация завершена убираем overlay
     useEffect(() => {
         if (isNavigatingRef.current && !isPending) {
             isNavigatingRef.current = false;
@@ -275,7 +290,7 @@ export default function Navbar() {
 
     return (
         <>
-            <nav className="fixed top-0 left-0 right-0 bg-transparent text-black dark:text-white w-screen p-4 flex justify-between items-center z-60">
+            <nav className="site-nav fixed top-0 left-0 right-0 bg-transparent text-black dark:text-white w-screen p-4 flex justify-between items-center z-60">
                 <div>
                     <a href="#">
                         <span
