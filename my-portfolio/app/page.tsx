@@ -50,7 +50,7 @@ export default function Home() {
 
   return (
     <main className="selection:bg-white selection:text-black">
-      {/* ─── HERO ─── */}
+      {/* HERO */}
       <section className="hero-section">
         <div>
           <h1 className="hero-title" id="hero-name">
@@ -64,7 +64,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── ABOUT ─── */}
+      {/* ABOUT */}
       <section className="content-section">
         <div className="overflow-hidden">
           <h2 className="reveal-text section-title">About Me</h2>
@@ -82,7 +82,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── SKILLS ─── */}
+      {/* SKILLS
       <section className="content-section">
         <div className="overflow-hidden">
           <h2 className="reveal-text section-title">Skills</h2>
@@ -98,9 +98,9 @@ export default function Home() {
             <p className="reveal-text skill-item">{skill}</p>
           </div>
         ))}
-      </section>
+      </section> */}
 
-      {/* ─── PROJECTS ─── */}
+      {/* PROJECTS */}
       <section className="content-section">
         <div className="overflow-hidden">
           <h2 className="reveal-text section-title">Projects</h2>
