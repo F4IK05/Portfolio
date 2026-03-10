@@ -3,9 +3,12 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useRef, useState, useCallback, useEffect, useTransition } from "react";
-import { AnimatedThemeToggler } from "../ui/animated-theme-toggler";
 import { usePathname, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+
+gsap.registerPlugin(ScrollToPlugin, ScrollTrigger);
 
 function initReveal() {
     gsap.to(".site-nav", {
@@ -32,7 +35,7 @@ type Page = "home" | "about" | "projects" | "contact";
 
 const dotStyles = `
   inline-block
-  w-0 h-0 bg-black dark:bg-white rounded-full
+  w-0 h-0 bg-white rounded-full
   transition-all duration-500 ease-out
   mr-0
 `;
@@ -68,6 +71,22 @@ export default function Navbar() {
     const activePage = (menuLinks.find(l => l.href === pathname)?.page ?? "home") as Page;
     const [hoveredPage, setHoveredPage] = useState<Page | null>(null);
     const previewPage = hoveredPage ?? activePage;
+
+    useEffect(() => {
+        if (isMenuOpen) {
+            // Замораживаем ScrollTrigger, но НЕ скрываем закреленные элементы
+            ScrollTrigger.getAll().forEach(t => {
+                t.disable(false); // Отключаем логику скролла
+                if (t.pin) {
+                    // Если у триггера есть pin, принудительно оставляем его видимым
+                    gsap.set(t.pin, { display: "block", visibility: "visible" });
+                }
+            });
+        } else {
+            ScrollTrigger.getAll().forEach(t => t.enable());
+            ScrollTrigger.refresh();
+        }
+    }, [isMenuOpen]);
 
     useGSAP(() => {
         containerRef.current = document.querySelector(".page-container") as HTMLDivElement;
@@ -155,6 +174,48 @@ export default function Navbar() {
         gsap.to([lineTopRef.current, lineBotRef.current], { scaleX: 1, transformOrigin: "left", duration: 0.3, ease: "power2.out", overwrite: "auto" });
     };
 
+
+    const closeMenu = useCallback(() => {
+        if (isAnimatingRef.current || !isMenuOpen) return;
+        isAnimatingRef.current = true;
+
+        unlockScroll();
+        setHoveredPage(null);
+
+        gsap.to(lineTopRef.current, { y: 0, rotation: 0, scaleX: 1, duration: 0.5, ease: "power2.inOut" });
+        gsap.to(lineBotRef.current, { y: 0, rotation: 0, scaleX: 1, duration: 0.5, ease: "power2.inOut" });
+
+        if (containerRef.current) {
+            gsap.to(containerRef.current, {
+                rotation: 0, x: 0, y: 0, scale: 1,
+                duration: 1.25, ease: "power4.inOut",
+            });
+        }
+
+        gsap.to(menuContentRef.current, {
+            rotation: -15, x: -100, y: -100, scale: 1.5, opacity: 0.25,
+            duration: 1.25, ease: "power4.inOut",
+        });
+
+        gsap.to(".menu-link-icon", {
+            opacity: 0, duration: 0.4, ease: "power2.in",
+        });
+
+        gsap.to(".menu-preview-3d", {
+            opacity: 0, duration: 0.4, ease: "power2.in",
+        });
+
+        gsap.to(".menu-overlay", {
+            clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+            duration: 1.25, ease: "power4.inOut",
+            onComplete: () => {
+                isAnimatingRef.current = false;
+                setIsMenuOpen(false);
+                ScrollTrigger.refresh();
+            },
+        });
+    }, [isMenuOpen]);
+
     const handleLinkClick = useCallback((e: React.MouseEvent, href: string) => {
         e.preventDefault();
         if (isAnimatingRef.current) return;
@@ -207,7 +268,7 @@ export default function Navbar() {
         if (containerRef.current) {
             gsap.to(containerRef.current, {
                 rotation: 10, x: 300, y: 450, scale: 1.5,
-                duration: 1.25, ease: "power4.inOut",
+                duration: 1.25, ease: "power4.inOut", force3D: false
             });
         }
 
@@ -239,46 +300,7 @@ export default function Navbar() {
             onComplete: () => {
                 isAnimatingRef.current = false;
                 setIsMenuOpen(true);
-            },
-        });
-    }, [isMenuOpen]);
-
-    const closeMenu = useCallback(() => {
-        if (isAnimatingRef.current || !isMenuOpen) return;
-        isAnimatingRef.current = true;
-
-        unlockScroll();
-        setHoveredPage(null);
-
-        gsap.to(lineTopRef.current, { y: 0, rotation: 0, scaleX: 1, duration: 0.5, ease: "power2.inOut" });
-        gsap.to(lineBotRef.current, { y: 0, rotation: 0, scaleX: 1, duration: 0.5, ease: "power2.inOut" });
-
-        if (containerRef.current) {
-            gsap.to(containerRef.current, {
-                rotation: 0, x: 0, y: 0, scale: 1,
-                duration: 1.25, ease: "power4.inOut",
-            });
-        }
-
-        gsap.to(menuContentRef.current, {
-            rotation: -15, x: -100, y: -100, scale: 1.5, opacity: 0.25,
-            duration: 1.25, ease: "power4.inOut",
-        });
-
-        gsap.to(".menu-link-icon", {
-            opacity: 0, duration: 0.4, ease: "power2.in",
-        });
-
-        gsap.to(".menu-preview-3d", {
-            opacity: 0, duration: 0.4, ease: "power2.in",
-        });
-
-        gsap.to(".menu-overlay", {
-            clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
-            duration: 1.25, ease: "power4.inOut",
-            onComplete: () => {
-                isAnimatingRef.current = false;
-                setIsMenuOpen(false);
+                ScrollTrigger.refresh();
             },
         });
     }, [isMenuOpen]);
@@ -290,12 +312,12 @@ export default function Navbar() {
 
     return (
         <>
-            <nav className="site-nav fixed top-0 left-0 right-0 bg-transparent text-black dark:text-white w-screen p-4 flex justify-between items-center z-60">
+            <nav className="site-nav fixed top-0 left-0 right-0 bg-transparent text-white mix-blend-difference w-screen p-4 flex justify-between items-center z-60">
                 <div>
                     <a href="#">
                         <span
                             ref={logoRef}
-                            className="navbar-logo-h text-lg font-medium"
+                            className="font-alias navbar-logo-h text-lg font-medium"
                             style={{ opacity: pathname === "/contact" ? 0 : 1 }}
                         >
                             hf
@@ -317,7 +339,7 @@ export default function Navbar() {
                 </div>
             </nav>
 
-            <div className="menu-overlay fixed inset-0 w-screen h-svh overflow-hidden bg-white dark:bg-black z-50 text-black dark:text-white [clip-path:polygon(0%_0%,100%_0%,100%_0%,0%_0%)]">
+            <div className="menu-overlay fixed inset-0 w-screen h-svh overflow-hidden bg-black z-50 text-white [clip-path:polygon(0%_0%,100%_0%,100%_0%,0%_0%)]">
                 <div
                     ref={menuContentRef}
                     className="relative w-full h-full flex content-center items-center origin-left-bottom will-change-[transform,opacity]"
@@ -334,7 +356,7 @@ export default function Navbar() {
                                             key={link.name}
                                             href={link.href}
                                             onClick={(e) => handleLinkClick(e, link.href)}
-                                            className="menu-link-item inline-flex items-center will-change-transform transition-colors duration-500 text-[3.5rem] tracking-[-0.02em] group"
+                                            className="font-alias menu-link-item inline-flex items-center will-change-transform transition-colors duration-500 text-[3.5rem] tracking-[-0.02em] group"
                                             style={{ transform: "translateY(120%)", opacity: 0.25 }}
                                             onMouseEnter={() => setHoveredPage(link.page as Page)}
                                             onMouseLeave={() => setHoveredPage(null)}
@@ -373,9 +395,6 @@ export default function Navbar() {
 
                     </div>
 
-                    <div className="absolute bottom-0 right-0 p-4">
-                        <AnimatedThemeToggler />
-                    </div>
                 </div>
             </div>
         </>

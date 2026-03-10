@@ -3,8 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Menu from "@/components/layout/menu";
 import Footer from "@/components/layout/footer";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Loader } from "@/components/ui/loader";
+import SmoothScroll from "@/components/providers/smooth-scroll";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,30 +27,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <head>
         <link
           rel="stylesheet"
           href="https://db.onlinewebfonts.com/c/28a143377cbff2d089d8727546304d3a?family=Alias+Exp"
         />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                const theme = localStorage.getItem('theme');
-                if (theme === 'dark' || (!theme && true)) {
-                  document.documentElement.classList.add('dark');
-                }
-              })();
-            `,
-          }}
-        />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen font-alias overflow-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen font-alias overflow-x-hidden`}
       >
-        <ThemeProvider>
-          <Loader />
+        <Loader />
+        <SmoothScroll>
           <div className="site-content relative flex flex-col min-h-screen">
             <Menu />
             <div className="page-container flex-1 flex flex-col overflow-hidden">
@@ -58,7 +46,7 @@ export default function RootLayout({
               <Footer />
             </div>
           </div>
-        </ThemeProvider>
+        </SmoothScroll>
       </body>
     </html>
   );

@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 const ASCII_ON_DARK  = " .:-=+*#%@";
-const ASCII_ON_LIGHT = "@%#*+:. ";
 
 type Page = "home" | "about" | "projects" | "contact";
 
@@ -104,6 +103,7 @@ interface Props {
     page?: Page;
     cols?: number;
     fontSize?: number;
+    color?: string;
     className?: string;
 }
 
@@ -111,6 +111,7 @@ export default function AsciiIcon3D({
     page = "home",
     cols = 60,
     fontSize = 10,
+    color,
     className = "",
 }: Props) {
     const asciiRef = useRef<HTMLPreElement>(null);
@@ -166,10 +167,7 @@ export default function AsciiIcon3D({
             ctx.drawImage(renderer.domElement, 0, 0, cols, rows);
             const imageData = ctx.getImageData(0, 0, cols, rows);
 
-            // Выбираем набор символов под текущую тему
-            // Читаем тему из DOM каждый кадр — мгновенно реагирует на смену темы
-            const isDark = document.documentElement.classList.contains("dark");
-            const chars = isDark ? ASCII_ON_DARK : ASCII_ON_LIGHT;
+            const chars = ASCII_ON_DARK;
 
             let ascii = "";
             for (let y = 0; y < rows; y++) {
@@ -220,7 +218,7 @@ export default function AsciiIcon3D({
                 fontSize: `${fontSize}px`,
                 lineHeight: "1.0",
                 letterSpacing: "0.05em",
-                color: PAGE_COLOR[page],
+                color: color ?? PAGE_COLOR[page],
                 background: "transparent",
                 margin: 0,
                 padding: 0,

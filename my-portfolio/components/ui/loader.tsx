@@ -154,9 +154,9 @@ export const Loader = () => {
 
     return (
         <>
-            <div className="preloader fixed w-screen h-svh bg-white dark:bg-black text-black dark:text-white z-100">
+            <div className="preloader fixed w-screen h-svh bg-black text-white z-100">
                 <div className="intro-title absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center">
-                    <h1 className="text-[6rem] font-semibold leading-none max-[1000px]:text-[2.5rem]">
+                    <h1 className="font-alias text-[6rem] font-semibold leading-none max-[1000px]:text-[2.5rem]">
                         <SplitChars text="hasanov faik" addFirstChar />
                     </h1>
                 </div>
@@ -164,7 +164,7 @@ export const Loader = () => {
 
             <div className="tags-overlay fixed w-screen h-svh z-100">
                 <div className="tag absolute w-max text-[#5a5a5a] overflow-hidden top-[15%] left-[15%]">
-                    <p className="text-[13px] font-medium">
+                    <p className="font-alias text-[13px] font-medium">
                         <SplitWords text="Portfolio" />
                     </p>
                 </div>

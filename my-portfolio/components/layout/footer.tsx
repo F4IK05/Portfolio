@@ -111,7 +111,7 @@ export default function Footer() {
 
                     <a ref={emailRef} href="mailto:faik.hasanov05@gmail.com" className="hidden sm:flex flex-col pl-6 border py-20  w-full">
                         <p
-                            className=" md:text-2xl"
+                            className="font-alias md:text-2xl"
                         >
                             faik.hasanov05@gmail.com
                         </p>

@@ -1,8 +1,22 @@
 "use client";
 
+import { useRef } from "react";
+import HeroSection from "@/components/home/hero-section";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import dynamic from "next/dynamic";
+import AboutSection from "@/components/home/about-section";
+import CheckerMarquee from "@/components/ui/checker-marquee";
+import { initReveal } from "@/lib/animations";
+import ProjectsSection from "@/components/home/projects-section";
+import ServicesSection from "@/components/home/services-section";
+import ProjectsShowcase from "@/components/home/projects-showcase";
+
+const WireframeSphere = dynamic(
+  () => import("@/components/home/wireframe-sphere"),
+  { ssr: false }
+);
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -11,109 +25,116 @@ if (typeof window !== "undefined") {
   window.addEventListener("loader:done", () => { loaderDone = true; }, { once: true });
 }
 
-function initReveal() {
-  const revealContainers =
-    document.querySelectorAll<HTMLElement>(".reveal-text");
-
-  revealContainers.forEach((container) => {
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: container,
-        start: "top 90%",
-      },
-    });
-
-    tl.set(container, { autoAlpha: 1 });
-    tl.from(container, {
-      duration: 1.8,
-      delay: 0.05,
-      y: 200,
-      skewY: 5,
-      stagger: { amount: 0.05 },
-      ease: "power4.out",
-    });
-  });
-
-  ScrollTrigger.refresh();
-}
-
 export default function Home() {
+  const heroSectionRef = useRef<HTMLDivElement>(null);
+  const heroWrapperRef = useRef<HTMLDivElement>(null);
+  const sphereRef = useRef<HTMLDivElement>(null);
+  const aboutRef = useRef<HTMLDivElement>(null);
+
   useGSAP(() => {
-    if (loaderDone) {
+    const showSphere = () => {
+      if (sphereRef.current) {
+        gsap.fromTo(sphereRef.current, {
+          y: 800,
+          autoAlpha: 0,
+        }, {
+          y: 300,
+          autoAlpha: 1,
+          duration: 1.2,
+          ease: "power3.out",
+        });
+      }
+    };
+
+    const runAnimations = () => {
       initReveal();
+      if (heroWrapperRef.current) {
+        gsap.to(heroWrapperRef.current, {
+          scale: 1,
+          duration: 1,
+          ease: "power3.out",
+          onComplete: showSphere,
+        });
+      }
+
+      if (heroSectionRef.current) {
+        gsap.to(heroSectionRef.current, {
+          yPercent: 120,
+          rotate: -10,
+          scale: 0.8,
+          autoAlpha: 0,
+          ease: "none",
+          scrollTrigger: {
+            trigger: heroSectionRef.current,
+            start: "top top",
+            end: "+=500",
+            scrub: 1.5,
+          }
+        })
+      }
+
+      if (aboutRef.current) {
+        gsap.fromTo(
+          aboutRef.current,
+          {
+            y: 200,
+            rotate: 8,
+            opacity: 0,
+            transformOrigin: "left center",
+          },
+          {
+            y: 0,
+            rotate: 0,
+            opacity: 1,
+            duration: 1.2,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: aboutRef.current,
+              start: "top 100%",
+              end: "top 70%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      }
+    };
+
+    if (loaderDone) {
+      runAnimations();
       return;
     }
-    const onLoaderDone = () => { loaderDone = true; initReveal(); };
+    const onLoaderDone = () => { loaderDone = true; runAnimations(); };
     window.addEventListener("loader:done", onLoaderDone, { once: true });
-    return () => window.removeEventListener("loader:done", onLoaderDone);
+    return () => {
+      window.removeEventListener("loader:done", onLoaderDone)
+    };
   }, []);
 
   return (
-    <main className="selection:bg-white selection:text-black">
-      {/* HERO */}
-      <section className="hero-section">
-        <div>
-          <h1 className="hero-title" id="hero-name">
-            faik hasanov
-          </h1>
+    <main className="flex flex-col bg-black overflow-hidden">
+      <div ref={heroSectionRef} className="relative overflow-hidden sticky top-0 z-0">
+        <div ref={heroWrapperRef} style={{ transform: "scale(0.85)", transformOrigin: "top center" }}>
+          <HeroSection />
         </div>
-        <div className="overflow-hidden">
-          <p className="reveal-text hero-subtitle">
-            Frontend Developer &amp; UI Designer
-          </p>
+        <div
+          ref={sphereRef}
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[30%] w-125 h-125 sm:w-150 sm:h-150 md:w-175 md:h-175 z-10 pointer-events-none"
+          style={{ visibility: "hidden", opacity: 0 }}
+        >
+          <WireframeSphere />
         </div>
-      </section>
-
-      {/* ABOUT */}
-      <section className="content-section">
-        <div className="overflow-hidden">
-          <h2 className="reveal-text section-title">About Me</h2>
-        </div>
-        <div className="overflow-hidden">
-          <p className="reveal-text section-text">
-            I build fast, accessible and visually rich web experiences.
-          </p>
-        </div>
-        <div className="overflow-hidden">
-          <p className="reveal-text section-text">
-            Passionate about clean code, motion design and pushing the limits of
-            the browser.
-          </p>
-        </div>
-      </section>
-
-      {/* SKILLS
-      <section className="content-section">
-        <div className="overflow-hidden">
-          <h2 className="reveal-text section-title">Skills</h2>
-        </div>
-        {[
-          "React / Next.js",
-          "TypeScript",
-          "GSAP & Motion",
-          "Three.js / R3F",
-          "Tailwind CSS",
-        ].map((skill) => (
-          <div key={skill} className="overflow-hidden">
-            <p className="reveal-text skill-item">{skill}</p>
-          </div>
-        ))}
-      </section> */}
-
-      {/* PROJECTS */}
-      <section className="content-section">
-        <div className="overflow-hidden">
-          <h2 className="reveal-text section-title">Projects</h2>
-        </div>
-        {["Portfolio Website", "E-Commerce Store", "3D Landing Page"].map(
-          (project) => (
-            <div key={project} className="overflow-hidden">
-              <p className="reveal-text project-item">{project}</p>
-            </div>
-          )
-        )}
-      </section>
-
+      </div>
+      <div ref={aboutRef} className="relative z-10">
+        <AboutSection />
+      </div>
+      <CheckerMarquee />
+      <div>
+        <ServicesSection />
+      </div>
+      <div>
+        <ProjectsSection />
+        <ProjectsShowcase />
+      </div>
 
     </main >
   );
